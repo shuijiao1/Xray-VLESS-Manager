@@ -6,6 +6,8 @@
 
 **中文** | [English](README.en.md)
 
+![Version](https://img.shields.io/badge/version-v0.1.2-blue?style=flat-square)
+
 **一个轻量的 Xray-core / VLESS 一键管理脚本，按官方 XTLS/Xray-examples 模板生成常用 VLESS 组合配置。**
 
 > 适合快速在 VPS 上安装 Xray-core、生成 VLESS 服务端配置和客户端链接。默认推荐 `VLESS + XTLS Vision + REALITY`。
@@ -130,6 +132,19 @@ xray test -config /usr/local/etc/xray/config.json
 ```
 
 校验通过后才会重启服务。
+
+---
+
+## ⚙️ 版本与发布
+
+- 当前版本：`v0.1.2`
+- 更新记录见 [`CHANGELOG.md`](CHANGELOG.md)
+- GitHub Release 会根据 `CHANGELOG.md` 自动生成说明
+- 维护者发布新版本可使用：
+
+```bash
+./release.sh <version> "更新说明"
+```
 
 ---
 

@@ -6,6 +6,8 @@
 
 [中文](README.md) | **English**
 
+![Version](https://img.shields.io/badge/version-v0.1.2-blue?style=flat-square)
+
 **A lightweight Xray-core / VLESS one-click manager that generates common VLESS server configs based on official XTLS/Xray-examples templates.**
 
 > It is designed for quick VPS deployment, server config generation, and client link export. The recommended default is `VLESS + XTLS Vision + REALITY`.
@@ -127,6 +129,19 @@ Before every actual restart, the script runs:
 
 ```bash
 xray test -config /usr/local/etc/xray/config.json
+```
+
+---
+
+## ⚙️ Versioning and Releases
+
+- Current version: `v0.1.2`
+- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
+- GitHub Releases are generated from `CHANGELOG.md`
+- Maintainers can publish a new version with:
+
+```bash
+./release.sh <version> "release notes"
 ```
 
 ---
