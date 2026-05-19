@@ -45,7 +45,7 @@ bash <(curl -Ls https://xray.shuijiao.de)
 Fallback:
 
 ```bash
-curl -Lo xray-vless.sh https://raw.githubusercontent.com/shuijiao1/Xray-VLESS-Manager/main/xray-vless.sh
+curl -Lo xray-vless.sh https://xray.shuijiao.de
 chmod +x xray-vless.sh
 ./xray-vless.sh
 ```
