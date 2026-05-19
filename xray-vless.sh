@@ -16,6 +16,7 @@ rand_uuid() { $XRAY_BIN uuid 2>/dev/null || cat /proc/sys/kernel/random/uuid; }
 rand_hex() { openssl rand -hex "${1:-8}"; }
 public_ip() { curl -4fsS --max-time 4 https://api.ipify.org 2>/dev/null || curl -4fsS --max-time 4 https://ifconfig.me 2>/dev/null || echo "YOUR_SERVER_IP"; }
 json_escape() { jq -rn --arg v "$1" '$v|@uri'; }
+require_value() { local name=$1 value=${2:-}; [[ -n $value ]] || { echo -e "${RED}${name} 生成失败，请检查 Xray-core 版本。${NC}"; return 1; }; }
 
 status_text() { [[ -x $XRAY_BIN ]] && echo -e "${GREEN}已安装${NC}" || echo -e "${RED}未安装${NC}"; }
 run_text() { systemctl is-active --quiet xray 2>/dev/null && echo -e "${GREEN}运行中${NC}" || echo -e "${RED}未运行${NC}"; }
@@ -158,7 +159,7 @@ install_vless_reality_vision() {
   ensure_xray
   local port uuid sni keys private public shortid ip uri
   port=$(ask_port 443); sni=$(ask_sni "www.microsoft.com"); uuid=$(rand_uuid); shortid=$(rand_hex 8); ip=$(public_ip)
-  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys"); require_value "PrivateKey" "$private"; require_value "PublicKey" "$public"
   mkdir -p "$XRAY_DIR"
   base_config | jq --argjson port "$port" --arg uuid "$uuid" --arg sni "$sni" --arg private "$private" --arg shortid "$shortid" '.inbounds=[{
     "listen":"0.0.0.0", "port":$port, "protocol":"vless",
@@ -176,7 +177,7 @@ install_vless_tcp_reality() {
   ensure_xray
   local port uuid sni keys private public shortid ip uri
   port=$(ask_port 443); sni=$(ask_sni "www.microsoft.com"); uuid=$(rand_uuid); shortid=$(rand_hex 8); ip=$(public_ip)
-  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys"); require_value "PrivateKey" "$private"; require_value "PublicKey" "$public"
   mkdir -p "$XRAY_DIR"
   base_config | jq --argjson port "$port" --arg uuid "$uuid" --arg sni "$sni" --arg private "$private" --arg shortid "$shortid" '.inbounds=[{
     "listen":"0.0.0.0", "port":$port, "protocol":"vless",
@@ -199,6 +200,9 @@ install_vless_ws_tls() {
   echo -e "${YELLOW}说明：此模式按官方 WS/TLS 模板生成。初版使用自签证书；生产更建议 Caddy/Nginx/ACME 前置。${NC}"
   openssl ecparam -genkey -name prime256v1 -out "$key"
   openssl req -new -x509 -key "$key" -out "$cert" -days 3650 -subj "/CN=${domain}" >/dev/null 2>&1
+  chown nobody:nogroup "$key" "$cert" 2>/dev/null || chown nobody:nobody "$key" "$cert" 2>/dev/null || true
+  chmod 640 "$key" 2>/dev/null || true
+  chmod 644 "$cert" 2>/dev/null || true
   base_config | jq --argjson port "$port" --arg uuid "$uuid" --arg domain "$domain" --arg path "$path" --arg cert "$cert" --arg key "$key" '.inbounds=[{
     "listen":"0.0.0.0", "port":$port, "protocol":"vless",
     "settings":{"clients":[{"id":$uuid,"level":0,"email":"ws-tls"}],"decryption":"none"},
@@ -215,7 +219,7 @@ install_vless_grpc_reality() {
   ensure_xray
   local port uuid sni keys private public shortid service ip uri
   port=$(ask_port 443); sni=$(ask_sni "www.microsoft.com"); uuid=$(rand_uuid); shortid=$(rand_hex 8); service="grpc$(rand_hex 3)"; ip=$(public_ip)
-  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys"); require_value "PrivateKey" "$private"; require_value "PublicKey" "$public"
   mkdir -p "$XRAY_DIR"
   base_config | jq --argjson port "$port" --arg uuid "$uuid" --arg sni "$sni" --arg private "$private" --arg shortid "$shortid" --arg service "$service" '.inbounds=[{
     "listen":"0.0.0.0", "port":$port, "protocol":"vless",
@@ -233,7 +237,7 @@ install_vless_xhttp_reality() {
   ensure_xray
   local port uuid sni keys private public shortid path ip uri
   port=$(ask_port 443); sni=$(ask_sni "www.microsoft.com"); path=$(ask_path "xhttp$(rand_hex 3)"); uuid=$(rand_uuid); shortid=$(rand_hex 8); ip=$(public_ip)
-  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+  keys=$($XRAY_BIN x25519); private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys"); public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys"); require_value "PrivateKey" "$private"; require_value "PublicKey" "$public"
   mkdir -p "$XRAY_DIR"
   base_config | jq --argjson port "$port" --arg uuid "$uuid" --arg sni "$sni" --arg private "$private" --arg shortid "$shortid" --arg path "$path" '.inbounds=[{
     "listen":"0.0.0.0", "port":$port, "protocol":"vless",
