@@ -6,7 +6,7 @@
 
 [中文](README.md) | **English**
 
-![Version](https://img.shields.io/badge/version-v0.1.2-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.1.3-blue?style=flat-square)
 
 **A lightweight Xray-core / VLESS one-click manager that generates common VLESS server configs based on official XTLS/Xray-examples templates.**
 
@@ -135,7 +135,7 @@ xray test -config /usr/local/etc/xray/config.json
 
 ## ⚙️ Versioning and Releases
 
-- Current version: `v0.1.2`
+- Current version: `v0.1.3`
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - GitHub Releases are generated from `CHANGELOG.md`
 - Maintainers can publish a new version with:
