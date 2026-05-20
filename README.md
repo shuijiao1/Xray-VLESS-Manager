@@ -6,7 +6,7 @@
 
 **中文** | [English](README.en.md)
 
-![Version](https://img.shields.io/badge/version-v0.1.3-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.1.4-blue?style=flat-square)
 
 **一个轻量的 Xray-core / VLESS 一键管理脚本，按官方 XTLS/Xray-examples 模板生成常用 VLESS 组合配置。**
 
