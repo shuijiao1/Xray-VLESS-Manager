@@ -133,17 +133,6 @@ xray test -config /usr/local/etc/xray/config.json
 
 ---
 
-## ⚙️ Versioning and Releases
-
-- Current version: `v0.1.3`
-- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
-- GitHub Releases are generated from `CHANGELOG.md`
-- Maintainers can publish a new version with:
-
-```bash
-./release.sh <version> "release notes"
-```
-
 ---
 
 ## 📄 License

@@ -26,15 +26,13 @@
 
 ## 🧩 支持组合
 
-| 菜单 | 组合 | 参考官方模板 / 文档 | 说明 |
-| --- | --- | --- | --- |
-| 2 | VLESS TCP 明文 | `VLESS-TCP` | 仅建议测试或套前置，不推荐公网裸跑 |
-| 3 | VLESS + XTLS Vision + REALITY | `VLESS-TCP-XTLS-Vision-REALITY` | 推荐默认方案 |
-| 4 | VLESS TCP + REALITY | `VLESS-TCP-REALITY` | 不启用 Vision flow |
-| 5 | VLESS + WebSocket + TLS | `VLESS-WSS-Nginx` / `VLESS-TCP-TLS-WS` | 初版内置自签证书，生产建议前置 ACME |
-| 6 | VLESS + gRPC + REALITY | `VLESS-gRPC-REALITY` | 可选 REALITY 组合 |
-| 7 | VLESS + XHTTP + REALITY | `VLESS-XHTTP-Reality` | 较新方案，建议 Xray >= v25.3.6 |
-| 8 | VLESS Encryption TCP | VLESS Encryption / `xray vlessenc` | 需要服务端和客户端都支持新字段 |
+- VLESS TCP
+- VLESS + XTLS Vision + REALITY
+- VLESS TCP + REALITY
+- VLESS + WebSocket + TLS
+- VLESS + gRPC + REALITY
+- VLESS + XHTTP + REALITY
+- VLESS Encryption TCP
 
 ---
 
@@ -134,17 +132,6 @@ xray test -config /usr/local/etc/xray/config.json
 校验通过后才会重启服务。
 
 ---
-
-## ⚙️ 版本与发布
-
-- 当前版本：`v0.1.3`
-- 更新记录见 [`CHANGELOG.md`](CHANGELOG.md)
-- GitHub Release 会根据 `CHANGELOG.md` 自动生成说明
-- 维护者发布新版本可使用：
-
-```bash
-./release.sh <version> "更新说明"
-```
 
 ---
 
