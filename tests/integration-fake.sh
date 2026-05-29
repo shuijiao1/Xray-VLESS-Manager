@@ -64,7 +64,7 @@ run_case() {
     XRAY_DIR="$dir/xray" \
     XRAY_BIN="$TMP/bin/xray" \
     XRAY_SERVICE="$dir/xray.service" \
-    bash ./xray-vless.sh >/tmp/${name}.out
+    bash ./xray-vless.sh >"/tmp/${name}.out"
   jq empty "$dir/xray/config.json"
   jq empty "$dir/xray/client.json"
   grep -q "$expect" "$dir/xray/client.txt"
@@ -77,5 +77,32 @@ run_case ws_tls '5\n8443\nexample.com\n/ws-test\n\n0\n' 'WebSocket + TLS'
 run_case grpc_reality '6\n8443\nwww.microsoft.com\n\n0\n' 'gRPC + REALITY'
 run_case xhttp_reality '7\n8443\nwww.microsoft.com\n/xhttp-test\n\n0\n' 'XHTTP + REALITY'
 run_case vlessenc '8\n8443\n\n0\n' 'VLESS Encryption'
+
+# Existing config without client.txt should be recoverable from menu 9.
+recover_dir="$TMP/recover_existing"
+mkdir -p "$recover_dir/xray"
+cat > "$recover_dir/xray/config.json" <<'JSON'
+{
+  "log": { "loglevel": "warning" },
+  "inbounds": [{
+    "listen": "0.0.0.0",
+    "port": 53589,
+    "protocol": "vless",
+    "settings": { "clients": [{ "id": "22222222-2222-4222-8222-222222222222" }], "decryption": "none" },
+    "streamSettings": { "network": "tcp", "security": "none" }
+  }],
+  "outbounds": [{ "protocol": "freedom", "tag": "direct" }]
+}
+JSON
+printf '9\n\n0\n' | env \
+  PATH="$TMP/bin:$PATH" \
+  TERM=xterm \
+  XRAY_DIR="$recover_dir/xray" \
+  XRAY_BIN="$TMP/bin/xray" \
+  XRAY_SERVICE="$recover_dir/xray.service" \
+  bash ./xray-vless.sh >/tmp/recover_existing.out
+jq empty "$recover_dir/xray/client.json"
+grep -q '22222222-2222-4222-8222-222222222222' "$recover_dir/xray/client.txt"
+grep -q 'vnext' "$recover_dir/xray/client.json"
 
 echo "fake integration tests passed"

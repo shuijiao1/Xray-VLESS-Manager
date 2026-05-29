@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-VERSION="0.1.3"
+VERSION="0.1.5"
 set -Eeuo pipefail
 
 GREEN='\033[0;32m'; RED='\033[0;31m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; CYAN='\033[0;36m'; NC='\033[0m'
@@ -21,6 +21,7 @@ require_value() { local name=$1 value=${2:-}; [[ -n $value ]] || { echo -e "${RE
 
 status_text() { [[ -x $XRAY_BIN ]] && echo -e "${GREEN}已安装${NC}" || echo -e "${RED}未安装${NC}"; }
 run_text() { systemctl is-active --quiet xray 2>/dev/null && echo -e "${GREEN}运行中${NC}" || echo -e "${RED}未运行${NC}"; }
+legacy_run_text() { if systemctl is-active --quiet xray-vless 2>/dev/null; then echo -e "${YELLOW}旧服务运行中${NC}"; fi; }
 pause() { read -r -p "按回车继续..." _ || true; }
 
 install_deps() {
@@ -43,6 +44,49 @@ install_xray() {
 }
 
 ensure_xray() { [[ -x $XRAY_BIN ]] || install_xray; }
+
+extract_first_uuid() { grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' "$1" 2>/dev/null | head -n1 | tr 'A-F' 'a-f'; }
+extract_first_port() { jq -r '.inbounds[0].port // empty' "$1" 2>/dev/null | head -n1; }
+extract_first_network() { jq -r '.inbounds[0].streamSettings.network // "tcp"' "$1" 2>/dev/null | head -n1; }
+extract_first_security() { jq -r '.inbounds[0].streamSettings.security // "none"' "$1" 2>/dev/null | head -n1; }
+
+write_client_from_current_config() {
+  [[ -f $CONFIG ]] || return 1
+  local ip port uuid network security uri title
+  ip=$(public_ip)
+  port=$(extract_first_port "$CONFIG")
+  uuid=$(extract_first_uuid "$CONFIG")
+  network=$(extract_first_network "$CONFIG")
+  security=$(extract_first_security "$CONFIG")
+  [[ -n ${port:-} && -n ${uuid:-} ]] || return 1
+  case "$network/$security" in
+    tcp/none|tcp/"")
+      write_client_json "$ip" "$port" "$uuid" tcp none
+      uri="vless://${uuid}@${ip}:${port}?encryption=none&security=none&type=tcp#VLESS-TCP-${ip}"
+      title="VLESS TCP 明文（官方模板：VLESS-TCP；不推荐公网裸跑）"
+      write_summary "$title" "$uri" "UUID: $uuid" "端口: $port"
+      ;;
+    *)
+      echo "当前配置类型为 ${network}/${security}，旧版本未保存客户端摘要，请重新安装该模式以生成完整客户端配置。"
+      return 1
+      ;;
+  esac
+}
+
+migrate_legacy_service() {
+  [[ -f /etc/systemd/system/xray-vless.service || -f /etc/xray/vless-basic.json ]] || return 0
+  if [[ ! -f $CONFIG && -f /etc/xray/vless-basic.json ]]; then
+    mkdir -p "$XRAY_DIR"
+    cp -a /etc/xray/vless-basic.json "$CONFIG"
+  fi
+  if [[ -f $CONFIG ]]; then
+    write_common_service
+    systemctl disable --now xray-vless.service >/dev/null 2>&1 || true
+    systemctl restart xray || systemctl start xray
+    write_client_from_current_config >/dev/null 2>&1 || true
+    echo "已迁移旧 xray-vless.service 到 xray.service"
+  fi
+}
 
 write_common_service() {
   mkdir -p "$XRAY_DIR"
@@ -110,13 +154,12 @@ write_client_json() {
     inbounds:[{listen:"127.0.0.1",port:10808,protocol:"socks",settings:{udp:true},sniffing:{enabled:true,destOverride:["http","tls","quic"],routeOnly:true}}],
     outbounds:[{
       tag:"proxy", protocol:"vless",
-      settings:({address:$address,port:$port,id:$uuid,encryption:$enc} + (if $flow != "" then {flow:$flow} else {} end)),
+      settings:{vnext:[{address:$address,port:$port,users:[({id:$uuid,encryption:$enc} + (if $flow != "" then {flow:$flow} else {} end))]}]},
       streamSettings:(
-        {network:$network} +
-        (if $security != "" and $security != "none" then {security:$security} else {} end) +
+        {network:$network,security:(if $security == "" then "none" else $security end)} +
         (if $security == "reality" then {realitySettings:{fingerprint:"chrome",serverName:$sni,publicKey:$public,shortId:$shortid,spiderX:"/"}} else {} end) +
-        (if $network == "ws" then {wsSettings:{path:$path}} else {} end) +
-        (if $network == "grpc" then {grpcSettings:{serviceName:$service}} else {} end) +
+        (if $network == "ws" then {wsSettings:{path:$path,headers:{Host:$sni}}} else {} end) +
+        (if $network == "grpc" then {grpcSettings:{serviceName:$service,multiMode:false}} else {} end) +
         (if $network == "xhttp" then {xhttpSettings:{path:$path}} else {} end) +
         (if $security == "tls" then {tlsSettings:{serverName:$sni,fingerprint:"chrome"}} else {} end)
       )
@@ -280,7 +323,7 @@ install_vless_encryption_tcp() {
   write_summary "VLESS Encryption TCP（官方文档：VLESS Encryption / xray vlessenc）" "$uri" "注意: 客户端必须支持同款 encryption 字段" "UUID: $uuid" "端口: $port" "encryption: $enc"
 }
 
-show_client() { [[ -f $CLIENT_TXT ]] && cat "$CLIENT_TXT" || echo "暂无配置"; }
+show_client() { [[ -f $CLIENT_TXT ]] || write_client_from_current_config >/dev/null 2>&1 || true; [[ -f $CLIENT_TXT ]] && cat "$CLIENT_TXT" || echo "暂无配置"; }
 show_log() { journalctl -u xray -n 80 --no-pager; }
 uninstall_xray() {
   read -r -p "确认卸载 Xray 并删除配置？[y/N] " yn
@@ -301,6 +344,9 @@ menu() {
   echo -e "${CYAN}============================================${NC}"
   echo -e "安装状态: $(status_text)"
   echo -e "运行状态: $(run_text)"
+  local legacy_status
+  legacy_status=$(legacy_run_text)
+  [[ -n $legacy_status ]] && echo -e "旧服务状态: $legacy_status（建议选择 13 迁移）"
   echo
   echo -e "${BLUE}=== 基础功能 ===${NC}"
   echo " 1) 安装/更新 Xray-core"
@@ -319,6 +365,7 @@ menu() {
   echo
   echo -e "${BLUE}=== 系统功能 ===${NC}"
   echo "12) 卸载 Xray"
+  echo "13) 迁移旧版 xray-vless.service"
   echo " 0) 退出"
   echo
 }
@@ -341,6 +388,7 @@ main() {
       10) systemctl restart xray && systemctl status xray --no-pager -l; pause;;
       11) show_log; pause;;
       12) uninstall_xray; pause;;
+      13) migrate_legacy_service; pause;;
       0) exit 0;;
       *) echo "无效选择"; pause;;
     esac
