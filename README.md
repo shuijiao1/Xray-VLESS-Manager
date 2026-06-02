@@ -6,7 +6,7 @@
 
 **中文** | [English](README.en.md)
 
-![Version](https://img.shields.io/badge/version-v0.1.4-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.1.6-blue?style=flat-square)
 
 **一个轻量的 Xray-core / VLESS 一键管理脚本，按官方 XTLS/Xray-examples 模板生成常用 VLESS 组合配置。**
 
@@ -16,7 +16,7 @@
 
 ## 🎯 核心特性
 
-- 支持 Xray-core 官方安装脚本安装 / 更新
+- 支持 Xray-core 官方安装脚本安装 / 更新核心程序
 - 按官方模板生成服务端配置，并在重启前执行 `xray test -config` 校验
 - 自动生成 UUID、REALITY X25519 key、shortId、WS/XHTTP path、gRPC serviceName
 - 输出 VLESS URI、关键参数和客户端 JSON
@@ -64,7 +64,7 @@ chmod +x xray-vless.sh
 运行状态: 运行中 / 未运行
 
 === 基础功能 ===
- 1) 安装/更新 Xray-core
+ 1) 安装/更新 Xray-core 核心
  2) 安装 VLESS TCP 明文
  3) 安装 VLESS + XTLS Vision + REALITY（推荐）
  4) 安装 VLESS TCP + REALITY

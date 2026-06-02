@@ -6,7 +6,7 @@
 
 [中文](README.md) | **English**
 
-![Version](https://img.shields.io/badge/version-v0.1.4-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.1.6-blue?style=flat-square)
 
 **A lightweight Xray-core / VLESS one-click manager that generates common VLESS server configs based on official XTLS/Xray-examples templates.**
 
@@ -16,7 +16,7 @@
 
 ## 🎯 Features
 
-- Install / update Xray-core through the official installer
+- Install / update the Xray-core binary through the official installer
 - Generate server configs based on official templates and validate with `xray test -config` before restart
 - Auto-generate UUID, REALITY X25519 keys, shortId, WS/XHTTP path, and gRPC serviceName
 - Export VLESS URI, key parameters, and client JSON
@@ -66,7 +66,7 @@ Install Status: installed / not installed
 Run Status: running / stopped
 
 === Basic ===
- 1) Install / update Xray-core
+ 1) Install / update the Xray-core binary
  2) Install VLESS TCP plaintext
  3) Install VLESS + XTLS Vision + REALITY (recommended)
  4) Install VLESS TCP + REALITY
