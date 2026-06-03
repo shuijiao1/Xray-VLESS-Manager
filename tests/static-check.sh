@@ -9,7 +9,7 @@ needles=(
   'VLESS-XHTTP-Reality'
   'vlessenc'
   'x25519'
-  'xray test -config'
+  'run -test -config'
 )
 for n in "${needles[@]}"; do
   grep -q "$n" xray-vless.sh README.md README.en.md 2>/dev/null || grep -q "$n" xray-vless.sh

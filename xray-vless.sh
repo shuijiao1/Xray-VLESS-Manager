@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-VERSION="0.1.6"
+VERSION="0.1.7"
 set -Eeuo pipefail
 
 GREEN='\033[0;32m'
@@ -32,6 +32,8 @@ require_value() {
 		return 1
 	}
 }
+extract_x25519_private() { awk -F': ' '/Private[[:space:]]*[Kk]ey|PrivateKey/{print $2; exit}' <<<"$1"; }
+extract_x25519_public() { awk -F': ' '/Public[[:space:]]*[Kk]ey|PublicKey|Password \(PublicKey\)/{print $2; exit}' <<<"$1"; }
 
 status_text() { [[ -x $XRAY_BIN ]] && echo -e "${GREEN}已安装${NC}" || echo -e "${RED}未安装${NC}"; }
 run_text() { systemctl is-active --quiet xray 2>/dev/null && echo -e "${GREEN}运行中${NC}" || echo -e "${RED}未运行${NC}"; }
@@ -171,9 +173,17 @@ base_config() {
 JSON
 }
 
+test_config() {
+	if $XRAY_BIN help 2>/dev/null | grep -qE '^[[:space:]]*test[[:space:]]'; then
+		$XRAY_BIN test -config "$CONFIG"
+	else
+		$XRAY_BIN run -test -config "$CONFIG"
+	fi
+}
+
 save_and_restart() {
 	write_common_service
-	$XRAY_BIN test -config "$CONFIG"
+	test_config
 	systemctl restart xray
 }
 
@@ -243,8 +253,8 @@ install_vless_reality_vision() {
 	shortid=$(rand_hex 8)
 	ip=$(public_ip)
 	keys=$($XRAY_BIN x25519)
-	private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys")
-	public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+	private=$(extract_x25519_private "$keys")
+	public=$(extract_x25519_public "$keys")
 	require_value "PrivateKey" "$private"
 	require_value "PublicKey" "$public"
 	mkdir -p "$XRAY_DIR"
@@ -269,8 +279,8 @@ install_vless_tcp_reality() {
 	shortid=$(rand_hex 8)
 	ip=$(public_ip)
 	keys=$($XRAY_BIN x25519)
-	private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys")
-	public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+	private=$(extract_x25519_private "$keys")
+	public=$(extract_x25519_public "$keys")
 	require_value "PrivateKey" "$private"
 	require_value "PublicKey" "$public"
 	mkdir -p "$XRAY_DIR"
@@ -324,8 +334,8 @@ install_vless_grpc_reality() {
 	service="grpc$(rand_hex 3)"
 	ip=$(public_ip)
 	keys=$($XRAY_BIN x25519)
-	private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys")
-	public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+	private=$(extract_x25519_private "$keys")
+	public=$(extract_x25519_public "$keys")
 	require_value "PrivateKey" "$private"
 	require_value "PublicKey" "$public"
 	mkdir -p "$XRAY_DIR"
@@ -351,8 +361,8 @@ install_vless_xhttp_reality() {
 	shortid=$(rand_hex 8)
 	ip=$(public_ip)
 	keys=$($XRAY_BIN x25519)
-	private=$(awk -F': ' '/Private key/{print $2}' <<<"$keys")
-	public=$(awk -F': ' '/Public key/{print $2}' <<<"$keys")
+	private=$(extract_x25519_private "$keys")
+	public=$(extract_x25519_public "$keys")
 	require_value "PrivateKey" "$private"
 	require_value "PublicKey" "$public"
 	mkdir -p "$XRAY_DIR"

@@ -6,7 +6,7 @@
 
 [中文](README.md) | **English**
 
-![Version](https://img.shields.io/badge/version-v0.1.6-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.1.7-blue?style=flat-square)
 
 **A lightweight Xray-core / VLESS one-click manager that generates common VLESS server configs based on official XTLS/Xray-examples templates.**
 
@@ -17,7 +17,7 @@
 ## 🎯 Features
 
 - Install / update the Xray-core binary through the official installer
-- Generate server configs based on official templates and validate with `xray test -config` before restart
+- Generate server configs based on official templates and validate with `xray run -test -config` before restart
 - Auto-generate UUID, REALITY X25519 keys, shortId, WS/XHTTP path, and gRPC serviceName
 - Export VLESS URI, key parameters, and client JSON
 - Simple menu for config viewing, restart, logs, and uninstall
@@ -102,7 +102,7 @@ The script will then:
 3. Generate keys and random parameters
 4. Write `/usr/local/etc/xray/config.json`
 5. Generate `/usr/local/etc/xray/client.txt` and `client.json`
-6. Run `xray test -config /usr/local/etc/xray/config.json`
+6. Run `xray run -test -config /usr/local/etc/xray/config.json`
 7. Restart `xray` only after validation passes
 
 ---
@@ -128,7 +128,7 @@ bash tests/static-check.sh
 Before every actual restart, the script runs:
 
 ```bash
-xray test -config /usr/local/etc/xray/config.json
+xray run -test -config /usr/local/etc/xray/config.json
 ```
 
 ---

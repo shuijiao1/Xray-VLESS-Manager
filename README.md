@@ -6,7 +6,7 @@
 
 **中文** | [English](README.en.md)
 
-![Version](https://img.shields.io/badge/version-v0.1.6-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-v0.1.7-blue?style=flat-square)
 
 **一个轻量的 Xray-core / VLESS 一键管理脚本，按官方 XTLS/Xray-examples 模板生成常用 VLESS 组合配置。**
 
@@ -17,7 +17,7 @@
 ## 🎯 核心特性
 
 - 支持 Xray-core 官方安装脚本安装 / 更新核心程序
-- 按官方模板生成服务端配置，并在重启前执行 `xray test -config` 校验
+- 按官方模板生成服务端配置，并在重启前执行 `xray run -test -config` 校验
 - 自动生成 UUID、REALITY X25519 key、shortId、WS/XHTTP path、gRPC serviceName
 - 输出 VLESS URI、关键参数和客户端 JSON
 - 菜单风格简洁，支持查看配置、重启、日志、卸载
@@ -100,7 +100,7 @@ chmod +x xray-vless.sh
 3. 生成密钥与随机参数
 4. 写入 `/usr/local/etc/xray/config.json`
 5. 生成 `/usr/local/etc/xray/client.txt` 和 `client.json`
-6. 执行 `xray test -config /usr/local/etc/xray/config.json`
+6. 执行 `xray run -test -config /usr/local/etc/xray/config.json`
 7. 校验通过后重启 `xray`
 
 ---
@@ -126,7 +126,7 @@ bash tests/static-check.sh
 实际安装前，脚本每次都会执行：
 
 ```bash
-xray test -config /usr/local/etc/xray/config.json
+xray run -test -config /usr/local/etc/xray/config.json
 ```
 
 校验通过后才会重启服务。
